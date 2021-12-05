@@ -1,33 +1,32 @@
 # For more information, please refer to https://aka.ms/vscode-docker-python
 FROM python:3.8-buster
 
-EXPOSE 8080
-
-RUN pip install gunicorn
-
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE 1
-
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED 1
-
-# Install pip requirements
-ADD requirements.txt .
-
-ARG CI_PY_REPO_USER
-ARG CI_PY_REPO_PASS
-
-# RUN apt-get update && apt-get install -y python3-venv build-essential python3-dev
-
-RUN python -m pip install -r requirements.txt
-
+EXPOSE 3000
 
 WORKDIR /app
 ADD . /app
+ENV DEBUG=False
+ENV HOST=0.0.0.0
+ENV PORT=3000
 
-# Switching to a non-root user, please refer to https://aka.ms/vscode-docker-python-user-rights
-RUN useradd appuser && chown -R appuser /app
-USER appuser
+ENV APP_LANG=en
+ENV X_API_KEY=123qwe
+ENV FLASK_APP=server.py
 
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["gunicorn", "server:app"]
+
+
+RUN python3 -m pip install gunicorn
+RUN python3 -m pip install -r requirements.txt
+
+# Change Timezone to Asia Tehran
+ENV TZ=Asia/Tehran
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Disable CipherString in OPENSSL Config
+
+RUN sed -i "s/CipherString = DEFAULT@SECLEVEL=2/#CipherString = DEFAULT@SECLEVEL=2/g" /etc/ssl/openssl.cnf
+
+
+#CMD ["python3","server.py"]
+
+CMD ["gunicorn", "-w","4", "server:app"]

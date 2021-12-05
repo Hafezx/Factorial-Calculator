@@ -1,5 +1,4 @@
 click==8.0.3
-dataclasses==0.8
 Flask==0.12.5
 Flask-APIBlueprint==1.0.0
 importlib-metadata==4.8.2
